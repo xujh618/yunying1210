@@ -4,7 +4,8 @@
   "description": "Backend service for uploading Excel data to Supabase database",
   "main": "server/server-exceljs.js",
   "scripts": {
-    "start": "node server/server-exceljs.js"
+    "start": "node server/server-exceljs.js",
+    "build": "echo \"No build needed for static website\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.87.0",
