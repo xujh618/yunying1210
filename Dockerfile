@@ -1,19 +1,17 @@
-FROM node:18-alpine
+# 使用官方 Node.js 18 镜像作为基础镜像
+FROM node:18
 
 # 设置工作目录
 WORKDIR /app
 
-# 复制server目录下的package.json和package-lock.json文件
-COPY server/package.json server/package-lock.json ./
+# 复制项目文件到工作目录
+COPY . /app
 
-# 安装依赖
-RUN npm ci --only=production
-
-# 复制server目录下的应用代码
-COPY server .
+# 安装后端依赖
+RUN cd server && npm install
 
 # 暴露端口
 EXPOSE 3000
 
-# 设置启动命令
-CMD ["npm", "start"]
+# 启动后端服务
+CMD ["npm", "start", "--prefix", "server"]
