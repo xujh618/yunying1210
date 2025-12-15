@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台</title>
+    <!-- 引入SheetJS库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f0f4f8;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e7ff;
+        }
+        
+        h1 {
+            color: #2563eb;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .back-btn {
+            background: #6b7280;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: #4b5563;
+        }
+        
+        /* Tab样式 */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e0e7ff;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: white;
+            border: 1px solid #e0e7ff;
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6b7280;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            border: 1px solid #e0e7ff;
+            border-radius: 0 6px 6px 6px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* 产品动态管理样式 */
+        .news-management {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            color: #2563eb;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .add-news-btn {
+            background: #2563eb;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .add-news-btn:hover {
+            background: #1d4ed8;
+        }
+        
+        .news-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        
+        .news-item-admin {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* 滚动条样式 */
+        .news-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .news-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .news-list::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        .news-list::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+        
+        .news-content {
+            flex: 1;
+            margin-right: 15px;
+        }
+        
+        .news-content input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .news-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .edit-btn, .delete-btn, .save-btn, .cancel-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+        
+        .edit-btn {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .edit-btn:hover {
+            background: #d97706;
+        }
+        
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+        
+        .save-btn {
+            background: #10b981;
+            color: white;
+        }
+        
+        .save-btn:hover {
+            background: #059669;
+        }
+        
+        .cancel-btn {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .cancel-btn:hover {
+            background: #4b5563;
+        }
+        
+        /* 数据卡片管理样式 */
+        .data-cards-admin {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .data-card-admin {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 20px;
+        }
+        
+        .data-card-admin h3 {
+            color: #2563eb;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #6b7280;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .save-all-btn {
+            background: #10b981;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .save-all-btn:hover {
+            background: #059669;
+        }
+        
+        /* 成功提示样式 */
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>广咨国际数字化产品运营管理后台</h1>
+            <button class="back-btn" onclick="window.location.href='index.html'">返回首页</button>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="home">首页管理</div>
+            <div class="tab" data-tab="digital-think-tank">数字智库</div>
+            <div class="tab" data-tab="bidding">招投标平台</div>
+            <div class="tab" data-tab="procurement">广咨智采</div>
+            <div class="tab" data-tab="cost">造价管理</div>
+            <div class="tab" data-tab="material">材价库</div>
+        </div>
+        
+        <!-- 首页管理 -->
+        <div class="tab-content active" id="home">
+            <!-- 产品动态管理 -->
+            <div class="news-management">
+                <h2 class="section-title">1. 首页产品动态管理</h2>
+                <div class="success-message" id="news-success">保存成功！</div>
+                <button class="add-news-btn" onclick="addNewsItem()">新增产品动态</button>
+                <div class="news-list" id="news-list"></div>
+            </div>
+            
+            <!-- 数据卡片管理 -->
+            <div class="data-card-management">
+                <h2 class="section-title">2. 首页数据卡片配置</h2>
+                <div class="success-message" id="cards-success">保存成功！</div>
+                <div class="data-cards-admin" id="data-cards-admin"></div>
+                <button class="save-all-btn" onclick="saveAllCards()">保存所有数据</button>
+            </div>
+        </div>
+        
+        <!-- 其他tab内容 -->
+        <div class="tab-content" id="digital-think-tank">
+            <h2 class="section-title">数字智库数据管理</h2>
+            
+            <!-- 成功/失败提示 -->
+            <div class="success-message" id="dt-success" style="margin-bottom: 20px;">上传成功！</div>
+            <div class="error-message" id="dt-error" style="background: #fee2e2; color: #dc2626; padding: 10px; border-radius: 4px; margin-bottom: 20px; display: none;">上传失败！</div>
+            
+            <!-- 下载模板 -->
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #374151; font-size: 1rem; margin-bottom: 10px;">1. 下载数据模板</h3>
+                <button class="add-news-btn" onclick="downloadDigitalThinkTankTemplate()">下载Excel模板</button>
+                <p style="color: #6b7280; font-size: 0.9rem; margin-top: 5px;">包含三个sheet表：各月访问数据、各月各部门访问次数、各月各功能使用次数</p>
+            </div>
+            
+            <!-- 上传数据 -->
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #374151; font-size: 1rem; margin-bottom: 10px;">2. 上传Excel数据</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="file" id="dt-excel-file" accept=".xlsx, .xls" style="padding: 8px;">
+                    <button class="add-news-btn" onclick="uploadDigitalThinkTankData()">导入数据</button>
+                </div>
+                <p style="color: #6b7280; font-size: 0.9rem; margin-top: 5px;">请按照模板格式填写数据，日期只到月份，确保格式兼容</p>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="bidding">
+            <h2 class="section-title">广咨电子招投标交易平台数据管理</h2>
+            
+            <!-- 成功/失败提示 -->
+            <div class="success-message" id="bidding-success" style="margin-bottom: 20px;">上传成功！</div>
+            <div class="error-message" id="bidding-error" style="background: #fee2e2; color: #dc2626; padding: 10px; border-radius: 4px; margin-bottom: 20px; display: none;">上传失败！</div>
+            
+            <!-- 下载模板 -->
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #374151; font-size: 1rem; margin-bottom: 10px;">1. 下载数据模板</h3>
+                <button class="add-news-btn" onclick="downloadBiddingTemplate()">下载Excel模板</button>
+                <p style="color: #6b7280; font-size: 0.9rem; margin-top: 5px;">包含访问数据和部门访问数据两个sheet表</p>
+            </div>
+            
+            <!-- 上传数据 -->
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #374151; font-size: 1rem; margin-bottom: 10px;">2. 上传Excel数据</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="file" id="bidding-excel-file" accept=".xlsx, .xls" style="padding: 8px;">
+                    <button class="add-news-btn" onclick="uploadBiddingData()">导入数据</button>
+                </div>
+                <p style="color: #6b7280; font-size: 0.9rem; margin-top: 5px;">请按照模板格式填写数据，日期只到月份，确保格式兼容</p>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="procurement">
+            <h2 class="section-title">广咨智采数据管理</h2>
+            
+            <!-- 成功/失败提示 -->
+            <div class="success-message" id="procurement-success" style="margin-bottom: 20px;">上传成功！</div>
+            <div class="error-message" id="procurement-error" style="background: #fee2e2; color: #dc2626; padding: 10px; border-radius: 4px; margin-bottom: 20px; display: none;">上传失败！</div>
+            
+            <!-- 下载模板 -->
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #374151; font-size: 1rem; margin-bottom: 10px;">1. 下载数据模板</h3>
+                <button class="add-news-btn" onclick="downloadProcurementTemplate()">下载Excel模板</button>
+                <p style="color: #6b7280; font-size: 0.9rem; margin-top: 5px;">包含访问数据和月度数据两个sheet表</p>
+            </div>
+            
+            <!-- 上传数据 -->
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #374151; font-size: 1rem; margin-bottom: 10px;">2. 上传Excel数据</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="file" id="procurement-excel-file" accept=".xlsx, .xls" style="padding: 8px;">
+                    <button class="add-news-btn" onclick="uploadProcurementData()">导入数据</button>
+                </div>
+                <p style="color: #6b7280; font-size: 0.9rem; margin-top: 5px;">请按照模板格式填写数据，日期只到月份，确保格式兼容</p>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="cost">
+            <h2 class="section-title">造价管理平台管理</h2>
+            <p>功能开发中...</p>
+        </div>
+        
+        <div class="tab-content" id="material">
+            <h2 class="section-title">材价库数据管理</h2>
+            
+            <!-- 成功/失败提示 -->
+            <div class="success-message" id="material-success" style="margin-bottom: 20px;">上传成功！</div>
+            <div class="error-message" id="material-error" style="background: #fee2e2; color: #dc2626; padding: 10px; border-radius: 4px; margin-bottom: 20px; display: none;">上传失败！</div>
+            
+            <!-- 下载模板 -->
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #374151; font-size: 1rem; margin-bottom: 10px;">1. 下载数据模板</h3>
+                <button class="add-news-btn" onclick="downloadMaterialTemplate()">下载Excel模板</button>
+                <p style="color: #6b7280; font-size: 0.9rem; margin-top: 5px;">包含访问数据、部门访问数据和月度数据三个sheet表</p>
+            </div>
+            
+            <!-- 上传数据 -->
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #374151; font-size: 1rem; margin-bottom: 10px;">2. 上传Excel数据</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="file" id="material-excel-file" accept=".xlsx, .xls" style="padding: 8px;">
+                    <button class="add-news-btn" onclick="uploadMaterialData()">导入数据</button>
+                </div>
+                <p style="color: #6b7280; font-size: 0.9rem; margin-top: 5px;">请按照模板格式填写数据，日期只到月份，确保格式兼容</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 初始化数据
+        function initData() {
+            // 初始化产品动态数据
+            if (!localStorage.getItem('homeNews')) {
+                const defaultNews = [
+                    { id: 1, content: '数字智库平台新增AI智能搜索功能，提升用户搜索体验' },
+                    { id: 2, content: '广咨电子招投标交易平台完成系统升级，支持更多招投标类型' },
+                    { id: 3, content: '广咨智采平台新增供应商信用评级功能，助力采购决策' },
+                    { id: 4, content: '全过程造价管理平台接入BIM技术，实现更精准的造价计算' },
+                    { id: 5, content: '材价库平台数据更新至2025年12月，新增1000+条材料价格信息' }
+                ];
+                localStorage.setItem('homeNews', JSON.stringify(defaultNews));
+            }
+            
+            // 初始化数据卡片
+            if (!localStorage.getItem('homeCards')) {
+                const defaultCards = [
+                    { id: 1, label: '公司累计数字化平台', value: '12', unit: '个' },
+                    { id: 2, label: 'AI工具', value: '8', unit: '个' },
+                    { id: 3, label: '所有平台累计访问量', value: '1,250,000', unit: '次' },
+                    { id: 4, label: '所有平台累计访问人数', value: '85,000', unit: '人' }
+                ];
+                localStorage.setItem('homeCards', JSON.stringify(defaultCards));
+            }
+        }
+        
+        // Tab切换功能
+        function initTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // 移除所有active状态
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // 添加当前active状态
+                    this.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        }
+        
+        // 渲染产品动态列表
+        function renderNewsList() {
+            const newsList = document.getElementById('news-list');
+            const news = JSON.parse(localStorage.getItem('homeNews')) || [];
+            
+            newsList.innerHTML = '';
+            
+            news.forEach(newsItem => {
+                const newsElement = document.createElement('div');
+                newsElement.className = 'news-item-admin';
+                newsElement.innerHTML = `
+                    <div class="news-content">
+                        <input type="text" value="${newsItem.content}" disabled id="news-${newsItem.id}">
+                    </div>
+                    <div class="news-actions">
+                        <button class="edit-btn" onclick="editNews(${newsItem.id})">编辑</button>
+                        <button class="delete-btn" onclick="deleteNews(${newsItem.id})">删除</button>
+                        <button class="save-btn" style="display: none;" onclick="saveNews(${newsItem.id})">保存</button>
+                        <button class="cancel-btn" style="display: none;" onclick="cancelEdit(${newsItem.id})">取消</button>
+                    </div>
+                `;
+                newsList.appendChild(newsElement);
+            });
+        }
+        
+        // 添加产品动态
+        function addNewsItem() {
+            const news = JSON.parse(localStorage.getItem('homeNews')) || [];
+            
+            if (news.length >= 10) {
+                alert('最多只能添加10条产品动态！');
+                return;
+            }
+            
+            const newId = Date.now();
+            const newNews = {
+                id: newId,
+                content: '请输入产品动态内容'
+            };
+            
+            news.push(newNews);
+            localStorage.setItem('homeNews', JSON.stringify(news));
+            renderNewsList();
+            editNews(newId); // 直接进入编辑模式
+        }
+        
+        // 编辑产品动态
+        function editNews(id) {
+            const input = document.getElementById(`news-${id}`);
+            const editBtn = input.parentElement.nextElementSibling.querySelector('.edit-btn');
+            const deleteBtn = input.parentElement.nextElementSibling.querySelector('.delete-btn');
+            const saveBtn = input.parentElement.nextElementSibling.querySelector('.save-btn');
+            const cancelBtn = input.parentElement.nextElementSibling.querySelector('.cancel-btn');
+            
+            input.disabled = false;
+            input.focus();
+            editBtn.style.display = 'none';
+            deleteBtn.style.display = 'none';
+            saveBtn.style.display = 'block';
+            cancelBtn.style.display = 'block';
+        }
+        
+        // 保存产品动态
+        function saveNews(id) {
+            const input = document.getElementById(`news-${id}`);
+            const content = input.value.trim();
+            
+            if (!content) {
+                alert('产品动态内容不能为空！');
+                return;
+            }
+            
+            const news = JSON.parse(localStorage.getItem('homeNews')) || [];
+            const updatedNews = news.map(item => {
+                if (item.id === id) {
+                    return { ...item, content };
+                }
+                return item;
+            });
+            
+            localStorage.setItem('homeNews', JSON.stringify(updatedNews));
+            renderNewsList();
+            showSuccessMessage('news-success');
+        }
+        
+        // 取消编辑
+        function cancelEdit(id) {
+            renderNewsList();
+        }
+        
+        // 删除产品动态
+        function deleteNews(id) {
+            if (confirm('确定要删除这条产品动态吗？')) {
+                const news = JSON.parse(localStorage.getItem('homeNews')) || [];
+                const updatedNews = news.filter(item => item.id !== id);
+                localStorage.setItem('homeNews', JSON.stringify(updatedNews));
+                renderNewsList();
+                showSuccessMessage('news-success');
+            }
+        }
+        
+        // 渲染数据卡片管理
+        function renderDataCards() {
+            const cardsContainer = document.getElementById('data-cards-admin');
+            const cards = JSON.parse(localStorage.getItem('homeCards')) || [];
+            
+            cardsContainer.innerHTML = '';
+            
+            cards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'data-card-admin';
+                cardElement.innerHTML = `
+                    <h3>${card.label}</h3>
+                    <div class="form-group">
+                        <label for="card-value-${card.id}">数值：</label>
+                        <input type="text" id="card-value-${card.id}" value="${card.value}">
+                    </div>
+                    <div class="form-group">
+                        <label for="card-unit-${card.id}">单位：</label>
+                        <input type="text" id="card-unit-${card.id}" value="${card.unit}">
+                    </div>
+                `;
+                cardsContainer.appendChild(cardElement);
+            });
+        }
+        
+        // 保存所有数据卡片
+        function saveAllCards() {
+            const cards = JSON.parse(localStorage.getItem('homeCards')) || [];
+            const updatedCards = cards.map(card => {
+                const value = document.getElementById(`card-value-${card.id}`).value;
+                const unit = document.getElementById(`card-unit-${card.id}`).value;
+                return { ...card, value, unit };
+            });
+            
+            localStorage.setItem('homeCards', JSON.stringify(updatedCards));
+            showSuccessMessage('cards-success');
+        }
+        
+        // 显示成功提示
+        function showSuccessMessage(elementId) {
+            const message = document.getElementById(elementId);
+            message.style.display = 'block';
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 2000);
+        }
+        
+        // 数字智库数据管理
+        
+        // 下载Excel模板
+        function downloadDigitalThinkTankTemplate() {
+            // 创建工作簿
+            const wb = XLSX.utils.book_new();
+            
+            // 1. 访问数据Sheet
+            const visitsData = [
+                ["月份", "访问次数", "人数", "注册用户数"],
+                ["2025-01", "25000", "4500", "1200"],
+                ["2025-02", "28000", "5200", "1500"],
+                ["2025-03", "32000", "6000", "1800"]
+            ];
+            const visitsWs = XLSX.utils.aoa_to_sheet(visitsData);
+            XLSX.utils.book_append_sheet(wb, visitsWs, "各月访问数据");
+            
+            // 2. 部门访问数据Sheet
+            // 从前端页面获取的部门列表
+            const departments = [
+                "月份",
+                "财务部", "采购咨询六部", "采购咨询四部", "大数据中心", "低碳能源中心",
+                "东莞分公司领导", "东莞投资评审部", "东莞投资咨询部", "风险评估中心", "工程管理分公司领导",
+                "工程管理总工室", "规划咨询二部（咨询四部）", "规划咨询三部（产业咨询部）", "规划咨询一部", "轨道交通部",
+                "海南分公司（海南项目管理分公司）", "集团领导", "绩效评价中心", "经营及合同管理部", "绿色低碳事业部领导",
+                "评审二室", "评审一室", "人力资源部", "社会公用事业部领导", "深圳投资咨询部",
+                "深圳造价咨询部", "数字化采购部", "数字造价部（BIM中心）", "投资造价采购咨询部", "投资造价分公司领导",
+                "项目管理部", "信息中心", "造价八部", "造价二部", "造价管理二部",
+                "造价管理一部", "造价六部", "造价七部", "造价三部", "造价四部",
+                "造价五部", "造价咨询二部", "造价咨询一部", "政策研究室", "政府采购中心",
+                "珠海投资咨询部", "咨询八部", "咨询策划部", "咨询九部", "咨询六部",
+                "咨询三部（教育咨询部）", "咨询十部（政企合作中心）", "咨询五部", "咨询一部", "总工办（创新管理部）"
+            ];
+            
+            const departmentData = [
+                departments,
+                ["2025-01", "1200", "800", "600", "1500", "1000", "900", "800", "700", "600", "500",
+                 "400", "300", "200", "150", "120", "100", "90", "80", "70", "60",
+                 "50", "40", "30", "25", "20", "15", "12", "10", "9", "8",
+                 "7", "6", "5", "4", "3", "2", "1", "100", "90", "80",
+                 "70", "60", "50", "40", "30", "25", "20", "15", "12", "10",
+                 "9", "8", "7"],
+                ["2025-02", "1400", "900", "700", "1600", "1100", "1000", "900", "800", "700", "600",
+                 "500", "400", "300", "250", "200", "180", "150", "120", "100", "90",
+                 "80", "70", "60", "50", "45", "40", "35", "30", "25", "20",
+                 "18", "15", "12", "10", "9", "8", "7", "6", "5", "120",
+                 "110", "100", "90", "80", "70", "60", "50", "45", "40", "35",
+                 "30", "25", "20"],
+                ["2025-03", "1600", "1000", "800", "1800", "1200", "1100", "1000", "900", "800", "700",
+                 "600", "500", "400", "350", "300", "280", "250", "220", "200", "180",
+                 "150", "120", "100", "90", "80", "70", "60", "50", "45", "40",
+                 "35", "30", "25", "20", "18", "15", "12", "10", "9", "140",
+                 "130", "120", "110", "100", "90", "80", "70", "60", "50", "45",
+                 "40", "35", "30"]
+            ];
+            const departmentWs = XLSX.utils.aoa_to_sheet(departmentData);
+            XLSX.utils.book_append_sheet(wb, departmentWs, "各月各部门访问次数");
+            
+            // 3. 功能使用数据Sheet
+            // 从前端页面获取的功能列表
+            const functions = [
+                "月份",
+                "全库搜", "数字经济 - 统计年鉴", "数字经济 - 统计公报", "整表数据 - 宏观图表", "整表数据 - 指标查询",
+                "数字经济 - 行业数据", "政策法规 - 政策资料", "政策法规 - 政府公报", "政策法规 - 工程规范", "地方动态 - 区域要览",
+                "地方动态 - 时政要闻", "广咨云库 - 项目成果库", "潜在 REITs 资产", "投融资案例库", "规划报告编制工具",
+                "知识图谱 - 医疗", "分析工具 - 计算器", "乡村振兴 - 政策查询", "政策可视化分析", "个人中心"
+            ];
+            
+            const functionData = [
+                functions,
+                ["2025-01", "5000", "4500", "4000", "3500", "3000",
+                 "2500", "2000", "1800", "1600", "1400",
+                 "1200", "1000", "900", "800", "750",
+                 "700", "650", "600", "550", "500"],
+                ["2025-02", "5800", "5200", "4800", "4200", "3800",
+                 "3200", "2800", "2500", "2200", "2000",
+                 "1800", "1600", "1400", "1200", "1100",
+                 "1000", "900", "800", "700", "600"],
+                ["2025-03", "6500", "5800", "5200", "4800", "4500",
+                 "4200", "3800", "3500", "3200", "2800",
+                 "2500", "2200", "2000", "1800", "1600",
+                 "1500", "1400", "1300", "1200", "1100"]
+            ];
+            const functionWs = XLSX.utils.aoa_to_sheet(functionData);
+            XLSX.utils.book_append_sheet(wb, functionWs, "各月各功能使用次数");
+            
+            // 4. 规划报告编制工具详情Sheet
+            const planningToolData = [
+                ["月份", "项目数", "成员数", "上传文件数量"],
+                ["2025-01", "120", "650", "2500"],
+                ["2025-02", "140", "780", "2800"],
+                ["2025-03", "156", "892", "3245"]
+            ];
+            const planningToolWs = XLSX.utils.aoa_to_sheet(planningToolData);
+            XLSX.utils.book_append_sheet(wb, planningToolWs, "规划报告编制工具详情");
+            
+            // 生成Excel文件并下载
+            XLSX.writeFile(wb, "数字智库数据模板.xlsx");
+        }
+        
+        // 上传数字智库数据
+        function uploadDigitalThinkTankData() {
+            const fileInput = document.getElementById('dt-excel-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showErrorMessage('dt-error', '请选择要上传的文件！');
+                return;
+            }
+            
+            // 创建FormData对象
+            const formData = new FormData();
+            formData.append('excel', file);
+            formData.append('product', 'digital-think-tank');
+            
+            // 发送POST请求到后端API
+            fetch('./api/upload-excel', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showSuccessMessage('dt-success');
+                    hideErrorMessage('dt-error');
+                    console.log('上传成功:', data);
+                    // 清空文件输入
+                    fileInput.value = '';
+                } else {
+                    showErrorMessage('dt-error', '上传失败：' + data.message);
+                    hideSuccessMessage('dt-success');
+                }
+            })
+            .catch(error => {
+                showErrorMessage('dt-error', '上传失败：' + error.message);
+                hideSuccessMessage('dt-success');
+                console.error('上传错误:', error);
+            });
+        }
+        
+        // 显示成功消息
+        function showSuccessMessage(elementId) {
+            const message = document.getElementById(elementId);
+            message.style.display = 'block';
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 2000);
+        }
+        
+        // 隐藏成功消息
+        function hideSuccessMessage(elementId) {
+            const message = document.getElementById(elementId);
+            message.style.display = 'none';
+        }
+        
+        // 显示错误消息
+        function showErrorMessage(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+        
+        // 隐藏错误消息
+        function hideErrorMessage(elementId) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.style.display = 'none';
+        }
+        
+        // 广咨电子招投标交易平台数据管理
+        
+        // 下载广咨电子招投标交易平台模板
+        function downloadBiddingTemplate() {
+            const wb = XLSX.utils.book_new();
+            
+            // 1. 访问数据Sheet
+            const visitsData = [
+                ["月份", "访问次数", "内部访问次数", "访问人数", "内部访问人数", "项目数"],
+                ["2025-01", "200000", "150000", "35000", "25000", "4000"],
+                ["2025-02", "220000", "165000", "38000", "28000", "4300"],
+                ["2025-03", "250000", "185000", "45000", "32000", "4800"]
+            ];
+            const visitsWs = XLSX.utils.aoa_to_sheet(visitsData);
+            XLSX.utils.book_append_sheet(wb, visitsWs, "访问数据");
+            
+            // 2. 部门访问数据Sheet
+            const departments = [
+                "月份",
+                "采购咨询一部", "采购咨询七部", "采购咨询二部", "采购咨询五部", "采购咨询四部",
+                "采购咨询六部", "珠海采购咨询部", "深圳采购咨询部", "采购咨询八部", "财务部",
+                "绿色低碳事业部", "经营管理部", "数字化采购部", "采购咨询事业部", "测试部门",
+                "政府采购二部", "办公室", "政府采购三部", "惠州分公司", "投资造价采购咨询部",
+                "政府采购四部", "分管领导", "数字化/七部分管领导/政采三部", "总工办", "东莞投资咨询部",
+                "中山分公司", "政府采购中心分管领导", "信息中心", "政府采购一部", "五部/八部分管领导",
+                "分公司领导", "二部/四部/六部分管领导", "深圳综合部", "佛山分公司", "造价三部",
+                "造价管理一部", "项目管理部"
+            ];
+            
+            const departmentData = [
+                departments,
+                ["2025-01", "1200", "800", "600", "1500", "1000", "900", "800", "700", "600", "500",
+                 "400", "300", "200", "150", "120", "100", "90", "80", "70", "60",
+                 "50", "40", "30", "25", "20", "15", "12", "10", "9", "8",
+                 "7", "6", "5", "4", "3", "2", "1"],
+                ["2025-02", "1400", "900", "700", "1600", "1100", "1000", "900", "800", "700", "600",
+                 "500", "400", "300", "250", "200", "180", "150", "120", "100", "90",
+                 "80", "70", "60", "50", "45", "40", "35", "30", "25", "20",
+                 "18", "15", "12", "10", "9", "8", "7", "6"],
+                ["2025-03", "1600", "1000", "800", "1800", "1200", "1100", "1000", "900", "800", "700",
+                 "600", "500", "400", "350", "300", "280", "250", "220", "200", "180",
+                 "150", "120", "100", "90", "80", "70", "60", "50", "45", "40",
+                 "35", "30", "25", "20", "18", "15", "12", "10"]
+            ];
+            const departmentWs = XLSX.utils.aoa_to_sheet(departmentData);
+            XLSX.utils.book_append_sheet(wb, departmentWs, "各月各部门访问次数");
+            
+            // 生成Excel文件并下载
+            XLSX.writeFile(wb, "广咨电子招投标交易平台数据模板.xlsx");
+        }
+        
+        // 上传广咨电子招投标交易平台数据
+        function uploadBiddingData() {
+            const fileInput = document.getElementById('bidding-excel-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showErrorMessage('bidding-error', '请选择要上传的文件！');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const arrayBuffer = e.target.result;
+                    const wb = XLSX.read(arrayBuffer, { type: 'array' });
+                    
+                    const visitsSheet = wb.Sheets["访问数据"];
+                    const departmentSheet = wb.Sheets["各月各部门访问次数"];
+                    
+                    if (!visitsSheet || !departmentSheet) {
+                        showErrorMessage('bidding-error', 'Excel文件缺少必要的sheet表！');
+                        hideSuccessMessage('bidding-success');
+                        return;
+                    }
+                    
+                    const visitsData = XLSX.utils.sheet_to_json(visitsSheet, { header: 1 });
+                    const departmentData = XLSX.utils.sheet_to_json(departmentSheet, { header: 1 });
+                    
+                    if (visitsData.length < 2 || departmentData.length < 2) {
+                        showErrorMessage('bidding-error', 'Excel文件数据格式不正确！');
+                        hideSuccessMessage('bidding-success');
+                        return;
+                    }
+                    
+                    const data = {
+                        "访问数据": visitsData,
+                        "部门访问数据": departmentData
+                    };
+                    
+                    localStorage.setItem('biddingData', JSON.stringify(data));
+                    
+                    showSuccessMessage('bidding-success');
+                    hideErrorMessage('bidding-error');
+                    
+                } catch (error) {
+                    showErrorMessage('bidding-error', 'Excel文件解析失败：' + error.message);
+                    hideSuccessMessage('bidding-success');
+                }
+            };
+            
+            reader.onerror = function() {
+                showErrorMessage('bidding-error', '文件读取失败！');
+                hideSuccessMessage('bidding-success');
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+        
+        // 广咨智采数据管理
+        
+        // 下载广咨智采模板
+        function downloadProcurementTemplate() {
+            const wb = XLSX.utils.book_new();
+            
+            // 只保留一个Sheet，包含所有数据
+            const visitsData = [
+                ["月份", "个人用户数量", "企业用户数量", "订单数量", "服务费收入"],
+                ["2025-01", "10000", "2000", "15000", "2000000"],
+                ["2025-02", "11000", "2400", "16500", "2200000"],
+                ["2025-03", "12500", "2800", "18500", "2500000"]
+            ];
+            const visitsWs = XLSX.utils.aoa_to_sheet(visitsData);
+            XLSX.utils.book_append_sheet(wb, visitsWs, "广咨智采数据");
+            
+            // 生成Excel文件并下载
+            XLSX.writeFile(wb, "广咨智采数据模板.xlsx");
+        }
+        
+        // 上传广咨智采数据
+        function uploadProcurementData() {
+            const fileInput = document.getElementById('procurement-excel-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showErrorMessage('procurement-error', '请选择要上传的文件！');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const arrayBuffer = e.target.result;
+                    const wb = XLSX.read(arrayBuffer, { type: 'array' });
+                    
+                    // 只读取一个sheet表
+                    const dataSheet = wb.Sheets["广咨智采数据"];
+                    
+                    if (!dataSheet) {
+                        showErrorMessage('procurement-error', 'Excel文件缺少必要的sheet表！');
+                        hideSuccessMessage('procurement-success');
+                        return;
+                    }
+                    
+                    const procurementData = XLSX.utils.sheet_to_json(dataSheet, { header: 1 });
+                    
+                    if (procurementData.length < 2) {
+                        showErrorMessage('procurement-error', 'Excel文件数据格式不正确！');
+                        hideSuccessMessage('procurement-success');
+                        return;
+                    }
+                    
+                    // 提取月度数据（用于组合图）
+                    const monthlyData = [procurementData[0]]; // 表头
+                    for (let i = 1; i < procurementData.length; i++) {
+                        const row = procurementData[i];
+                        if (row.length >= 5) {
+                            // 只取月份、订单数量、服务费收入
+                            monthlyData.push([row[0], row[3], row[4]]);
+                        }
+                    }
+                    
+                    const data = {
+                        "访问数据": procurementData,
+                        "月度数据": monthlyData
+                    };
+                    
+                    localStorage.setItem('procurementData', JSON.stringify(data));
+                    
+                    showSuccessMessage('procurement-success');
+                    hideErrorMessage('procurement-error');
+                    
+                } catch (error) {
+                    showErrorMessage('procurement-error', 'Excel文件解析失败：' + error.message);
+                    hideSuccessMessage('procurement-success');
+                }
+            };
+            
+            reader.onerror = function() {
+                showErrorMessage('procurement-error', '文件读取失败！');
+                hideSuccessMessage('procurement-success');
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+        
+        // 材价库数据管理
+        
+        // 下载材价库模板
+        function downloadMaterialTemplate() {
+            const wb = XLSX.utils.book_new();
+            
+            // 1. 访问数据Sheet
+            const visitsData = [
+                ["月份", "访问次数", "访问人数", "材价数量", "标准工料机数量", "询价申请数据", "询价材料数据", "供应商数量"],
+                ["2025-01", "100000", "15000", "50000", "10000", "2500", "3800", "700"],
+                ["2025-02", "110000", "16500", "54000", "11000", "2800", "4100", "780"],
+                ["2025-03", "120000", "18500", "58000", "12500", "3200", "4500", "850"]
+            ];
+            const visitsWs = XLSX.utils.aoa_to_sheet(visitsData);
+            XLSX.utils.book_append_sheet(wb, visitsWs, "访问数据");
+            
+            // 2. 部门访问数据Sheet
+            const departments = [
+                "月份",
+                "大数据中心", "数字造价一部", "轨道交通部", "造价三部", "造价咨询二部",
+                "数字造价二部", "造价管理一部", "造价四部", "评审一室", "造价二部",
+                "造价管理三部", "信息化管理部", "采购咨询八部（采购咨询研究中心办公室）", "东莞投资咨询部", "造价一部",
+                "经营及合同管理部", "低碳能源中心", "造价咨询一部", "造价五部", "深圳造价咨询部",
+                "人力资源部", "集团领导", "财务部", "规划咨询三部", "采购咨询五部",
+                "咨询五部", "咨询九部", "项目管理部", "绿色低碳事业部领导", "投资造价事业部领导",
+                "审计咨询部", "咨询一部", "造价管理二部", "数字化采购部", "投资造价综合管理部"
+            ];
+            
+            const departmentData = [
+                departments,
+                ["2025-01", "1200", "800", "600", "1500", "1000", "900", "800", "700", "600", "500",
+                 "400", "300", "200", "150", "120", "100", "90", "80", "70", "60",
+                 "50", "40", "30", "25", "20", "15", "12", "10", "9", "8",
+                 "7", "6", "5", "4"],
+                ["2025-02", "1400", "900", "700", "1600", "1100", "1000", "900", "800", "700", "600",
+                 "500", "400", "300", "250", "200", "180", "150", "120", "100", "90",
+                 "80", "70", "60", "50", "45", "40", "35", "30", "25", "20",
+                 "18", "15", "12", "10"],
+                ["2025-03", "1600", "1000", "800", "1800", "1200", "1100", "1000", "900", "800", "700",
+                 "600", "500", "400", "350", "300", "280", "250", "220", "200", "180",
+                 "150", "120", "100", "90", "80", "70", "60", "50", "45", "40",
+                 "35", "30", "25", "20", "18"]
+            ];
+            const departmentWs = XLSX.utils.aoa_to_sheet(departmentData);
+            XLSX.utils.book_append_sheet(wb, departmentWs, "各月各部门访问次数");
+            
+            // 3. 月度数据Sheet
+            const monthlyData = [
+                ["月份", "厂商报价", "市场询价", "信息价"],
+                ["1月", "1200", "800", "2500"],
+                ["2月", "1500", "1000", "2800"],
+                ["3月", "1800", "1200", "3200"],
+                ["4月", "1600", "1100", "3000"],
+                ["5月", "2000", "1400", "3500"],
+                ["6月", "2200", "1600", "3800"],
+                ["7月", "2500", "1800", "4200"],
+                ["8月", "2800", "2000", "4500"],
+                ["9月", "2300", "1700", "4000"],
+                ["10月", "2100", "1500", "3800"],
+                ["11月", "1900", "1300", "3500"],
+                ["12月", "2000", "1400", "3600"]
+            ];
+            const monthlyWs = XLSX.utils.aoa_to_sheet(monthlyData);
+            XLSX.utils.book_append_sheet(wb, monthlyWs, "月度数据");
+            
+            // 生成Excel文件并下载
+            XLSX.writeFile(wb, "材价库数据模板.xlsx");
+        }
+        
+        // 上传材价库数据
+        function uploadMaterialData() {
+            const fileInput = document.getElementById('material-excel-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showErrorMessage('material-error', '请选择要上传的文件！');
+                return;
+            }
+            
+            // 创建FormData对象，用于发送文件到后端
+            const formData = new FormData();
+            formData.append('excel', file);
+            formData.append('product', 'material-price');
+            
+            // 调用后端API上传数据
+            fetch('./api/upload-excel', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(result => {
+                if (result.success) {
+                    showSuccessMessage('material-success');
+                    hideErrorMessage('material-error');
+                    console.log('数据上传成功:', result);
+                } else {
+                    showErrorMessage('material-error', '数据上传失败：' + result.message);
+                    hideSuccessMessage('material-success');
+                }
+            })
+            .catch(error => {
+                showErrorMessage('material-error', '数据上传失败：' + error.message);
+                hideSuccessMessage('material-success');
+                console.error('上传错误:', error);
+            });
+        }
+        
+        // 广咨电子招投标交易平台数据管理
+        
+        // 下载招投标平台模板
+        function downloadBiddingTemplate() {
+            const wb = XLSX.utils.book_new();
+            
+            // 1. 访问数据Sheet
+            const visitsData = [
+                ["月份", "访问次数", "访问人数", "项目数"],
+                ["2025-01", "120000", "15000", "800"],
+                ["2025-02", "135000", "16800", "920"],
+                ["2025-03", "156000", "18900", "1050"]
+            ];
+            const visitsWs = XLSX.utils.aoa_to_sheet(visitsData);
+            XLSX.utils.book_append_sheet(wb, visitsWs, "访问数据");
+            
+            // 2. 部门访问数据Sheet
+            const departments = [
+                "月份",
+                "大数据中心", "数字造价一部", "轨道交通部", "造价三部", "造价咨询二部",
+                "数字造价二部", "造价管理一部", "造价四部", "评审一室", "造价二部",
+                "造价管理三部", "信息化管理部", "采购咨询八部", "东莞投资咨询部", "造价一部",
+                "经营及合同管理部", "低碳能源中心", "造价咨询一部", "造价五部", "深圳造价咨询部"
+            ];
+            
+            const departmentData = [
+                departments,
+                ["2025-01", "1200", "800", "600", "1500", "1000", "900", "800", "700", "600", "500",
+                 "400", "300", "200", "150", "120", "100", "90", "80", "70"],
+                ["2025-02", "1400", "900", "700", "1600", "1100", "1000", "900", "800", "700", "600",
+                 "500", "400", "300", "250", "200", "180", "150", "120", "100"],
+                ["2025-03", "1600", "1000", "800", "1800", "1200", "1100", "1000", "900", "800", "700",
+                 "600", "500", "400", "350", "300", "280", "250", "220", "200"]
+            ];
+            const departmentWs = XLSX.utils.aoa_to_sheet(departmentData);
+            XLSX.utils.book_append_sheet(wb, departmentWs, "各月各部门访问次数");
+            
+            // 生成Excel文件并下载
+            XLSX.writeFile(wb, "广咨电子招投标交易平台数据模板.xlsx");
+        }
+        
+        // 上传招投标平台数据
+        function uploadBiddingData() {
+            const fileInput = document.getElementById('bidding-excel-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showErrorMessage('bidding-error', '请选择要上传的文件！');
+                return;
+            }
+            
+            // 创建FormData对象
+            const formData = new FormData();
+            formData.append('excel', file);
+            formData.append('product', 'bidding-platform');
+            
+            // 显示加载状态
+            const uploadBtn = document.querySelector('button[onclick="uploadBiddingData()"]');
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '上传中...';
+            
+            // 发送到后端API
+            fetch('./api/upload-excel', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showSuccessMessage('bidding-success');
+                    hideErrorMessage('bidding-error');
+                } else {
+                    showErrorMessage('bidding-error', data.message || '上传失败！');
+                    hideSuccessMessage('bidding-success');
+                }
+            })
+            .catch(error => {
+                console.error('上传失败:', error);
+                showErrorMessage('bidding-error', '上传失败，请检查服务器连接！');
+                hideSuccessMessage('bidding-success');
+            })
+            .finally(() => {
+                // 恢复按钮状态
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '导入数据';
+            });
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initData();
+            initTabs();
+            renderNewsList();
+            renderDataCards();
+        });
+    </script>
+</body>
+</html>

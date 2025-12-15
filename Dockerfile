@@ -14,6 +14,8 @@ COPY yunying-dashboard-server/ .
 
 # 复制前端文件
 COPY index.html ./
+COPY product-detail.html ./
+COPY admin.html ./
 
 # 创建uploads目录
 RUN mkdir -p uploads

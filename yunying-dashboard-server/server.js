@@ -102,26 +102,9 @@ app.use(express.static(path.join(__dirname)));
 app.get('/', (req, res) => {
   try {
     const htmlPath = path.join(__dirname, 'index.html');
-    console.log(`尝试返回HTML文件: ${htmlPath}`);
-    console.log(`文件是否存在: ${fs.existsSync(htmlPath)}`);
     res.sendFile(htmlPath);
   } catch (error) {
     console.error('返回HTML文件失败:', error.message);
-    res.status(500).send('服务器内部错误');
-  }
-});
-
-// 确保所有其他请求都返回index.html，支持SPA应用
-app.get('*', (req, res) => {
-  try {
-    const htmlPath = path.join(__dirname, 'index.html');
-    if (fs.existsSync(htmlPath)) {
-      res.sendFile(htmlPath);
-    } else {
-      res.status(404).send('Page not found');
-    }
-  } catch (error) {
-    console.error('处理请求失败:', error.message);
     res.status(500).send('服务器内部错误');
   }
 });
