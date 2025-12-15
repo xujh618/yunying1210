@@ -4,13 +4,13 @@ FROM node:18-alpine
 WORKDIR /app
 
 # 复制package.json和package-lock.json
-COPY package*.json ./
+COPY yunying-dashboard-server/package*.json ./
 
 # 安装依赖
 RUN npm ci --omit=dev
 
 # 复制应用代码
-COPY . .
+COPY yunying-dashboard-server/ .
 
 # 设置环境变量
 ENV NODE_ENV=production
