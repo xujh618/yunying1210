@@ -11,11 +11,16 @@ RUN npm ci --omit=dev
 
 # 复制应用代码
 COPY yunying-dashboard-server/ .
+
 # 复制前端文件
 COPY index.html ./
 
+# 创建uploads目录
+RUN mkdir -p uploads
+
 # 设置环境变量
 ENV NODE_ENV=production
+ENV PORT=3000
 
 # 暴露端口
 EXPOSE 3000
