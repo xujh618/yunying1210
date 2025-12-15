@@ -11,6 +11,8 @@ RUN npm ci --omit=dev
 
 # 复制应用代码
 COPY yunying-dashboard-server/ .
+# 复制前端文件
+COPY index.html ./
 
 # 设置环境变量
 ENV NODE_ENV=production

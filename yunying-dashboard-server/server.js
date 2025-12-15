@@ -95,8 +95,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // 提供静态文件服务
 app.use('/uploads', express.static('uploads'));
-// 提供旧版前端静态文件服务
-app.use(express.static('../'));
+// 提供前端静态文件服务
+app.use(express.static('.'));
+
+// 根路径返回前端页面
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // 健康检查路由（保留，用于API健康检查）
 app.get('/api/health', (req, res) => {
