@@ -445,7 +445,7 @@
                 }
                 
                 const queryString = params.toString();
-                const url = queryString ? `http://localhost:3000/api/data/${tableName}?${queryString}` : `http://localhost:3000/api/data/${tableName}`;
+                const url = queryString ? `/api/data/${tableName}?${queryString}` : `/api/data/${tableName}`;
                 
                 const response = await fetch(url);
                 const data = await response.json();
@@ -651,7 +651,7 @@
                     params.append('endDate', endDate);
                 }
                 const queryString = params.toString();
-                const url = queryString ? `http://localhost:3000/api/data/smart_procurement_monthly_users?${queryString}` : `http://localhost:3000/api/data/smart_procurement_monthly_users`;
+                const url = queryString ? `/api/data/smart_procurement_monthly_users?${queryString}` : `/api/data/smart_procurement_monthly_users`;
                 
                 // 直接调用API获取广咨智采月度用户数据，并传递日期筛选参数
                 const userDataResponse = await fetch(url);
@@ -779,7 +779,7 @@
             
             try {
                 // 从新创建的月度数据表获取数据
-                const url = `http://localhost:3000/api/data/material_price_monthly_data${startDate || endDate ? '?' : ''}${startDate ? `startDate=${startDate}` : ''}${startDate && endDate ? '&' : ''}${endDate ? `endDate=${endDate}` : ''}`;
+                const url = `/api/data/material_price_monthly_data${startDate || endDate ? '?' : ''}${startDate ? `startDate=${startDate}` : ''}${startDate && endDate ? '&' : ''}${endDate ? `endDate=${endDate}` : ''}`;
                 const response = await fetch(url);
                 const result = await response.json();
                 if (result.success) {
