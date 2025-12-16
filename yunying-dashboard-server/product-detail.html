@@ -1776,10 +1776,10 @@
             
             try {
                 // 从API获取规划报告编制工具详情数据
-                const response = await fetch('./api/data/digital_library_planning_tool_details');
+                const response = await fetch('/api/data/digital_library_planning_tool_details');
                 const result = await response.json();
                 
-                const planningToolDetails = result.length > 0 ? result[0] : {};
+                const planningToolDetails = result.success && result.data.length > 0 ? result.data[0] : {};
                 
                 // 更新模态框内容
                 const projectValue = document.querySelector('#planningToolModal .modal-stat:nth-child(1) .value');
@@ -1834,11 +1834,11 @@
                 }
                 
                 // 从API获取所有数据，提取可用月份
-                const response = await fetch(`./api/data/${tableName}`);
+                const response = await fetch(`/api/data/${tableName}`);
                 const result = await response.json();
                 
-                if (result.length > 0) {
-                    const monthlyData = result;
+                if (result.success && result.data.length > 0) {
+                    const monthlyData = result.data;
                     const availableMonths = monthlyData.map(item => item.month);
                     
                     // 设置日期选择器的最小值和最大值
