@@ -1540,19 +1540,23 @@
             // 如果功能数据是行存储格式（每条记录有feature_name和usage字段）
             else if (functionData[0].feature_name) {
                 console.log('检测到行存储格式的功能数据，需要转换');
-                // 按功能名称分组，取每个功能的最新数据
-                const featureMap = new Map();
+                // 按功能名称分组，聚合所有月份的使用次数
+                const featureSumMap = new Map();
                 functionData.forEach(item => {
-                    if (!featureMap.has(item.feature_name) || 
-                        (featureMap.get(item.feature_name).month < item.month)) {
-                        featureMap.set(item.feature_name, item);
+                    const featureName = item.feature_name;
+                    const usage = parseInt(item.usage) || 0;
+                    
+                    if (featureSumMap.has(featureName)) {
+                        featureSumMap.set(featureName, featureSumMap.get(featureName) + usage);
+                    } else {
+                        featureSumMap.set(featureName, usage);
                     }
                 });
                 
                 // 转换为数组
-                transformedFunctionData = Array.from(featureMap.values()).map(item => ({
-                    name: item.feature_name,
-                    usage: item.usage
+                transformedFunctionData = Array.from(featureSumMap.entries()).map(([name, usage]) => ({
+                    name: name,
+                    usage: usage
                 }));
                 
                 console.log('转换后的功能数据:', transformedFunctionData);
